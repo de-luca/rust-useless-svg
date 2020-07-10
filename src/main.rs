@@ -75,14 +75,14 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         let tera =
-            Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*")).unwrap();
+            Tera::new("templates/**/*").unwrap();
 
         App::new()
             .data(tera)
             .wrap(middleware::Logger::default())
             .service(web::resource("/useless.svg").route(web::get().to(index)))
     })
-        .bind("127.0.0.1:8080")?
+        .bind("0.0.0.0:7878")?
         .run()
         .await
 }
