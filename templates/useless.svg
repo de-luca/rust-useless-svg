@@ -1,0 +1,25 @@
+<svg width="{{ WIDTH }}px" height="{{ HEIGHT }}px" style="margin: auto; margin-top: 10px" xmlns="http://www.w3.org/2000/svg">
+    {% for row in matrix %}
+        {% set x = loop.index0 %}
+        {% for col in row %}
+            {% set y = loop.index0 %}
+            {% if col[1] == 1 %}
+            <path
+                    d="M {{ y * GAP + GAP }} {{ x * GAP }} L {{ y * GAP + GAP }} {{ x * GAP + (GAP * 2) }}"
+                    fill="none"
+                    stroke="rgb({{ color_v[y].red }}, {{ color_v[y].green }}, {{ color_v[y].blue }})"
+                    stroke-width="2"
+            />
+            {% endif %}
+            {% if col[0] == 1 %}
+            <path
+                    d="M {{ y * GAP }} {{ x * GAP + GAP }} L {{ y * GAP + (GAP * 2) }} {{ x * GAP + GAP }}"
+                    fill="none"
+                    stroke="rgb({{ color_h[x].red }}, {{ color_h[x].green }}, {{ color_h[x].blue }})"
+                    stroke-width="2"
+            />
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</svg>
+
