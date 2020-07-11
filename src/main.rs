@@ -2,7 +2,8 @@
 extern crate lazy_static;
 
 use serde::{Serialize};
-use actix_web::{App, error, Error, HttpResponse, HttpServer, middleware, Result, web};
+use actix_web::{App, error, Error, HttpResponse, HttpServer, middleware, Result, web, Responder};
+use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
 use tera::{Context, Tera};
 use rand::{Rng};
 
@@ -34,7 +35,7 @@ impl Color {
     }
 }
 
-async fn index(tmpl: web::Data<tera::Tera>) -> Result<HttpResponse, Error> {
+async fn index(tmpl: web::Data<tera::Tera>) -> Result<impl Responder, Error> {
     let mut rng = rand::thread_rng();
 
     let mut matrix: Vec<Vec<(i8, i8)>> = vec![];
@@ -65,7 +66,19 @@ async fn index(tmpl: web::Data<tera::Tera>) -> Result<HttpResponse, Error> {
             error::ErrorInternalServerError("Template error")
         })?;
 
-    Ok(HttpResponse::Ok().content_type("image/svg+xml").body(s))
+    Ok(
+        HttpResponse::Ok()
+            .content_type("image/svg+xml")
+            .body(s)
+            .with_header(
+                CACHE_CONTROL,
+                CacheControl(vec![
+                    CacheDirective::NoCache,
+                    CacheDirective::Private,
+                    CacheDirective::MaxAge(0),
+                ])
+            )
+    )
 }
 
 #[actix_rt::main]

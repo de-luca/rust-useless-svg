@@ -1,4 +1,4 @@
-<svg width="{{ WIDTH }}px" height="{{ HEIGHT }}px" style="margin: auto; margin-top: 10px" xmlns="http://www.w3.org/2000/svg">
+<svg width="{{ WIDTH }}px" height="{{ HEIGHT }}px" xmlns="http://www.w3.org/2000/svg">
     {% for row in matrix %}
         {% set x = loop.index0 %}
         {% for col in row %}
