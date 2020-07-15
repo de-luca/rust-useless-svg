@@ -4,6 +4,7 @@ extern crate lazy_static;
 use serde::{Serialize};
 use actix_web::{App, error, Error, HttpResponse, HttpServer, middleware, Result, web, Responder};
 use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
+use actix_web::http::header::{ETAG, EntityTag};
 use tera::{Context, Tera};
 use rand::{Rng};
 
@@ -66,18 +67,26 @@ async fn index(tmpl: web::Data<tera::Tera>) -> Result<impl Responder, Error> {
             error::ErrorInternalServerError("Template error")
         })?;
 
+
     Ok(
         HttpResponse::Ok()
             .content_type("image/svg+xml")
-            .body(s)
+            .body(&s)
             .with_header(
                 CACHE_CONTROL,
                 CacheControl(vec![
                     CacheDirective::NoCache,
-                    CacheDirective::Private,
                     CacheDirective::MaxAge(0),
                 ])
             )
+            .with_header(
+                ETAG,
+                EntityTag::new(
+                    false,
+                    format!("{:x}", md5::compute(&s.as_bytes())),
+                )
+            )
+
     )
 }
 
