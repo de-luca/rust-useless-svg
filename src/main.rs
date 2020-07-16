@@ -1,12 +1,25 @@
 #[macro_use]
 extern crate lazy_static;
 
-use serde::{Serialize};
-use actix_web::{App, error, Error, HttpResponse, HttpServer, middleware, Result, web, Responder};
-use actix_web::http::header::{CACHE_CONTROL, CacheControl, CacheDirective};
-use actix_web::http::header::{ETAG, EntityTag};
-use tera::{Context, Tera};
+use actix_web::{
+    App,
+    Error,
+    HttpResponse,
+    HttpServer,
+    middleware,
+    Responder,
+    Result,
+    web,
+};
+use actix_web::http::header::{
+    CACHE_CONTROL,
+    CacheControl,
+    CacheDirective,
+    ETAG,
+    EntityTag,
+};
 use rand::{Rng};
+use bit_vec::BitVec;
 
 const GAP: usize = 10;
 const WIDTH: usize = 500;
@@ -14,10 +27,9 @@ const HEIGHT: usize = 250;
 
 lazy_static! {
     static ref COLS: usize = WIDTH / GAP - 1;
-    static ref ROWS: usize = HEIGHT / GAP - 1;
+    static ref ROWS: usize = ((HEIGHT / GAP) * 2) - 1;
 }
 
-#[derive(Serialize, Copy, Clone)]
 struct Color {
     red: i16,
     green: i16,
@@ -34,44 +46,53 @@ impl Color {
             blue: rng.gen_range(0, 256),
         }
     }
+    fn hex(&self) -> String {
+        format!("#{:x}{:x}{:x}", self.red, self.green, self.blue)
+    }
 }
 
-async fn index(tmpl: web::Data<tera::Tera>) -> Result<impl Responder, Error> {
+
+async fn index() -> Result<impl Responder, Error> {
     let mut rng = rand::thread_rng();
+    let col_colors: Vec<Color> = (0..*COLS).map(|_| Color::random()).collect();
 
-    let mut matrix: Vec<Vec<(i8, i8)>> = vec![];
-    let mut color_v: Vec<Color> = vec![];
-    let mut color_h: Vec<Color> = vec![];
+    let mut svg = format!(
+        "<svg width=\"{}px\" height=\"{}px\" xmlns=\"http://www.w3.org/2000/svg\">",
+        WIDTH, HEIGHT,
+    );
 
-    for _r in 0..*ROWS {
-        color_h.push(Color::random());
-        let mut row: Vec<(i8, i8)> = vec![];
-        for _c in 0..*COLS {
-            color_v.push(Color::random());
-            row.push((rng.gen_range(0, 2), rng.gen_range(0, 2)));
+    for row in 0..*ROWS {
+        let row_color = Color::random();
+        let mut bits = BitVec::from_bytes(
+            &rng.gen_range(i64::MIN, i64::MAX).to_be_bytes()
+        );
+        bits.truncate(*COLS);
+
+        let even = row % 2 == 0;
+        let mut col = 0;
+
+        for display in bits.iter() {
+            if display {
+                svg.push_str(format!(
+                    "<path d=\"M {} {} L {} {}\" stroke=\"{}\" stroke-width=\"2\" />",
+                    col * GAP + if even { GAP } else { 0 },
+                    row * GAP + if even { 0 } else { GAP },
+                    col * GAP + (GAP * if even { 1 } else { 2 }),
+                    row * GAP + (GAP * if even { 2 } else { 1 }),
+                    if even { col_colors.get(col).unwrap().hex() } else { row_color.hex() },
+                ).as_str());
+            }
+
+            col = col + 1;
         }
-        matrix.push(row);
     }
 
-    let mut ctx = Context::new();
-    ctx.insert("GAP", &GAP);
-    ctx.insert("WIDTH", &WIDTH);
-    ctx.insert("HEIGHT", &HEIGHT);
-    ctx.insert("matrix", &matrix);
-    ctx.insert("color_v", &color_v);
-    ctx.insert("color_h", &color_h);
-
-    let s = tmpl.render("useless.svg", &ctx)
-        .map_err(|e| {
-            dbg!(e);
-            error::ErrorInternalServerError("Template error")
-        })?;
-
+    svg.push_str("</svg>");
 
     Ok(
         HttpResponse::Ok()
             .content_type("image/svg+xml")
-            .body(&s)
+            .body(&svg)
             .with_header(
                 CACHE_CONTROL,
                 CacheControl(vec![
@@ -83,7 +104,7 @@ async fn index(tmpl: web::Data<tera::Tera>) -> Result<impl Responder, Error> {
                 ETAG,
                 EntityTag::new(
                     false,
-                    format!("{:x}", md5::compute(&s.as_bytes())),
+                    format!("{:x}", md5::compute(&svg.as_bytes())),
                 )
             )
 
@@ -96,11 +117,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     HttpServer::new(|| {
-        let tera =
-            Tera::new("templates/**/*").unwrap();
-
         App::new()
-            .data(tera)
             .wrap(middleware::Logger::default())
             .service(web::resource("/useless.svg").route(web::get().to(index)))
     })
