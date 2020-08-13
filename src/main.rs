@@ -22,6 +22,7 @@ const HEIGHT: usize = 250;
 lazy_static! {
     static ref COLS: usize = WIDTH / GAP - 1;
     static ref ROWS: usize = HEIGHT / GAP - 2;
+    static ref COMMIT: String = option_env!("COMMIT").unwrap_or("head").to_string();
 }
 
 
@@ -72,6 +73,19 @@ impl ColorPreset {
             _ => (0, 100),
         }
     }
+
+    fn name(&self) -> String {
+        match self {
+            ColorPreset::Chaos => "chaos",
+            ColorPreset::Black => "black",
+            ColorPreset::Red => "red",
+            ColorPreset::Yellow => "yellow",
+            ColorPreset::Green => "green",
+            ColorPreset::Cyan => "cyan",
+            ColorPreset::Blue => "blue",
+            ColorPreset::Purple => "purple",
+        }.to_string()
+    }
 }
 
 struct Color {
@@ -101,6 +115,7 @@ impl Color {
 
 
 async fn index() -> Result<impl Responder, Error> {
+    dbg!(&*COMMIT);
     let mut rng = rand::thread_rng();
     let preset: ColorPreset = rand::random();
 
@@ -148,6 +163,19 @@ async fn index() -> Result<impl Responder, Error> {
             col = col + 1;
         }
     }
+
+    svg.push_str(format!(
+        "<text x=\"650\" y=\"250\"
+            dominant-baseline=\"hanging\"
+            text-anchor=\"end\"
+            font-family=\"sans-serif\"
+            font-size=\"15\"
+            font-weight=\"lighter\"
+            fill=\"lightgrey\"
+        >{}:{}</text>",
+        preset.name(),
+        &*COMMIT,
+    ).as_str());
 
     svg.push_str("</svg>");
 

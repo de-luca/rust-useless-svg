@@ -1,4 +1,6 @@
 FROM ekidd/rust-musl-builder:stable as builder
+ARG SOURCE_COMMIT
+ENV COMMIT $SOURCE_COMMIT
 ADD ./ /home/rust/src
 RUN cargo build --release
 
