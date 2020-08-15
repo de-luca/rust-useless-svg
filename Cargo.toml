@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 md5 = "0.7.0"
-rand = "0.7.3"
+rand = { version = "0.7.3", features = ["small_rng"] }
 env_logger = "0.7"
 actix-http = "1.0.1"
 actix-web = "2.0.0"
