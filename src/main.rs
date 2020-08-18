@@ -1,17 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use actix_web::{
-    App,
-    Error,
-    HttpRequest,
-    HttpResponse,
-    HttpServer,
-    middleware,
-    Responder,
-    Result,
-    web,
-};
+use actix_web::{App, Error, HttpResponse, HttpServer, middleware, Responder, Result, web};
 use actix_web::http::header::{
     CACHE_CONTROL,
     CacheControl,
@@ -19,13 +9,9 @@ use actix_web::http::header::{
     ETAG,
     EntityTag,
 };
-use rand::{
-    distributions::{Distribution, Standard},
-    Rng,
-    rngs::SmallRng,
-    SeedableRng,
-};
+use rand::{distributions::{Distribution, Standard}, Rng};
 use bit_vec::BitVec;
+use rand::prelude::ThreadRng;
 
 
 const GAP: usize = 10;
@@ -109,7 +95,7 @@ struct Color {
 }
 
 impl Color {
-    fn random(rng: &mut SmallRng, preset: &ColorPreset) -> Color {
+    fn random(rng: &mut ThreadRng, preset: &ColorPreset) -> Color {
         let hue_range = preset.hue_range();
         let saturation_range = preset.saturation_range();
 
@@ -128,16 +114,9 @@ impl Color {
 }
 
 
-async fn index(req: HttpRequest) -> Result<impl Responder, Error> {
-    let connection_info = req.connection_info();
-    let ip = connection_info.remote().unwrap()
-        .split(":")
-        .collect::<Vec<&str>>()[0];
-    let seed = ip.split(".")
-        .map(|part| part.parse::<u64>().unwrap())
-        .sum::<u64>();
-
-    let mut rng = SmallRng::seed_from_u64(seed);
+async fn index() -> Result<impl Responder, Error> {
+    dbg!(&*COMMIT);
+    let mut rng = rand::thread_rng();
     let preset: ColorPreset = rand::random();
 
     let col_colors: Vec<Color> = (0..*COLS).map(|_| Color::random(&mut rng, &preset)).collect();
@@ -184,18 +163,6 @@ async fn index(req: HttpRequest) -> Result<impl Responder, Error> {
             col = col + 1;
         }
     }
-
-    svg.push_str(format!(
-        "<text x=\"0\" y=\"250\"
-            dominant-baseline=\"hanging\"
-            text-anchor=\"start\"
-            font-family=\"sans-serif\"
-            font-size=\"15\"
-            font-weight=\"lighter\"
-            fill=\"lightgrey\"
-        >{}</text>",
-        &ip
-    ).as_str());
 
     svg.push_str(format!(
         "<text x=\"650\" y=\"250\"
