@@ -17,6 +17,7 @@ use rand::prelude::ThreadRng;
 const GAP: usize = 10;
 const WIDTH: usize = 650;
 const HEIGHT: usize = 250;
+const TEXT_SIZE: usize = 15;
 
 
 lazy_static! {
@@ -115,7 +116,6 @@ impl Color {
 
 
 async fn index() -> Result<impl Responder, Error> {
-    dbg!(&*COMMIT);
     let mut rng = rand::thread_rng();
     let preset: ColorPreset = rand::random();
 
@@ -123,7 +123,7 @@ async fn index() -> Result<impl Responder, Error> {
 
     let mut svg = format!(
         "<svg viewBox=\"0 0 {} {}\" xmlns=\"http://www.w3.org/2000/svg\">",
-        WIDTH, HEIGHT,
+        WIDTH, HEIGHT + TEXT_SIZE,
     );
 
     for row in 0..*ROWS {
@@ -145,7 +145,7 @@ async fn index() -> Result<impl Responder, Error> {
                     row * GAP,
                     col * GAP + GAP,
                     row * GAP + (GAP * 2),
-                    row_color.hsl(),
+                    col_colors.get(col).unwrap().hsl(),
                 ).as_str());
             }
 
@@ -156,7 +156,7 @@ async fn index() -> Result<impl Responder, Error> {
                     row * GAP + GAP,
                     col * GAP + (GAP * 2),
                     row * GAP + GAP,
-                    col_colors.get(col).unwrap().hsl(),
+                    row_color.hsl(),
                 ).as_str());
             }
 
@@ -165,14 +165,17 @@ async fn index() -> Result<impl Responder, Error> {
     }
 
     svg.push_str(format!(
-        "<text x=\"650\" y=\"250\"
+        "<text x=\"{}\" y=\"{}\"
             dominant-baseline=\"hanging\"
             text-anchor=\"end\"
             font-family=\"sans-serif\"
-            font-size=\"15\"
+            font-size=\"{}\"
             font-weight=\"lighter\"
             fill=\"lightgrey\"
         >{}:{}</text>",
+        WIDTH,
+        HEIGHT,
+        TEXT_SIZE,
         preset.name(),
         &*COMMIT,
     ).as_str());
