@@ -138,7 +138,7 @@ async fn index() -> Result<impl Responder, Error> {
         let mut col = 0;
 
         for (display_row, display_col) in row_bits.iter().zip(col_bits.iter()) {
-            if display_row {
+            if col < (*COLS - 1) && display_row {
                 svg.push_str(format!(
                     "<path d=\"M {} {} L {} {}\" stroke=\"{}\" stroke-width=\"2\" />",
                     col * GAP + GAP,
@@ -149,7 +149,7 @@ async fn index() -> Result<impl Responder, Error> {
                 ).as_str());
             }
 
-            if display_col {
+            if row < (*ROWS - 1) && display_col {
                 svg.push_str(format!(
                     "<path d=\"M {} {} L {} {}\" stroke=\"{}\" stroke-width=\"2\" />",
                     col * GAP,
