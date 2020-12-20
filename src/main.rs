@@ -15,14 +15,14 @@ use rand::prelude::ThreadRng;
 
 
 const GAP: usize = 10;
-const WIDTH: usize = 650;
-const HEIGHT: usize = 250;
+const WIDTH: usize = 640;
+const HEIGHT: usize = 240;
 const TEXT_SIZE: usize = 15;
 
 
 lazy_static! {
-    static ref COLS: usize = WIDTH / GAP - 1;
-    static ref ROWS: usize = HEIGHT / GAP - 2;
+    static ref COLS: usize = WIDTH / GAP;
+    static ref ROWS: usize = HEIGHT / GAP - 1;
     static ref COMMIT: String = option_env!("COMMIT").unwrap_or("head").to_string();
 }
 
@@ -144,7 +144,7 @@ async fn index() -> Result<impl Responder, Error> {
                     col * GAP + GAP,
                     row * GAP,
                     col * GAP + GAP,
-                    row * GAP + (GAP * 2),
+                    row * GAP + GAP,
                     col_colors.get(col).unwrap().hsl(),
                 ).as_str());
             }
@@ -154,7 +154,7 @@ async fn index() -> Result<impl Responder, Error> {
                     "<path d=\"M {} {} L {} {}\" stroke=\"{}\" stroke-width=\"2\" />",
                     col * GAP,
                     row * GAP + GAP,
-                    col * GAP + (GAP * 2),
+                    col * GAP + GAP,
                     row * GAP + GAP,
                     row_color.hsl(),
                 ).as_str());
