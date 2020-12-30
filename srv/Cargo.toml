@@ -1,0 +1,13 @@
+[package]
+name = "srv"
+version = "0.2.0"
+authors = ["Bastien de Luca <dev@de-luca.io>"]
+edition = "2018"
+
+[dependencies]
+svg = { path = "../svg" }
+md5 = "0.7.0"
+env_logger = "0.7"
+actix-http = "1.0.1"
+actix-web = "2.0.0"
+actix-rt = "1.0.0"

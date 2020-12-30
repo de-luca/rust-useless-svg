@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+
+  vercel:
+    image: deluca/rust-vercel
+    init: true
+    entrypoint: bash
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/scripts
+      - ../now-rust:/now-rust

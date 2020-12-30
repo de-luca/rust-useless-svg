@@ -1,0 +1,18 @@
+[package]
+name = "api"
+version = "0.1.0"
+authors = [ "Bastien de Luca <dev@de-luca.io>" ]
+edition = "2018"
+
+[dependencies]
+http = "0.1"
+now_lambda = "*"
+md5 = "0.7.0"
+rand = "0.7.3"
+env_logger = "0.7"
+lazy_static = "1.4.0"
+bit-vec = "0.6.2"
+
+[lib]
+name = "svg"
+path = "../svg/src/lib.rs"
