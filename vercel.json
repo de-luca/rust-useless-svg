@@ -3,5 +3,8 @@
   "name": "useless-svg",
   "builds": [
     { "src": "api/**/*.rs", "use": "https://vercel-rust-phi.vercel.app/" }
+  ],
+  "rewrites": [
+    { "source": "/useless.svg", "destination": "/api/src/main.rs" }
   ]
 }
