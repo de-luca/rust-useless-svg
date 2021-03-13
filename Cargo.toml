@@ -1,10 +1,7 @@
 [workspace]
 
 members = [
+    "api",
     "srv",
     "svg"
-]
-
-exclude = [
-    "api"
 ]

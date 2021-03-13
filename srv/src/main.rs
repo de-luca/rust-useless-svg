@@ -1,6 +1,4 @@
 use svg;
-
-
 use actix_web::{App, Error, HttpResponse, Responder, Result, HttpServer, middleware, web};
 use actix_web::http::header::{
     CACHE_CONTROL,

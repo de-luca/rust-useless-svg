@@ -2,6 +2,6 @@
   "version": 2,
   "name": "useless-svg",
   "builds": [
-    { "src": "api/**/*.rs", "use": "https://now-rust-delta.vercel.app" }
+    { "src": "api/**/*.rs", "use": "https://vercel-rust-phi.vercel.app/" }
   ]
 }
